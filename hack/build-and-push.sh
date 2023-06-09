@@ -64,6 +64,7 @@ fi
 
 # Support multi-arch image build and push.
 BUILDX_PLATFORMS="${BUILDX_PLATFORMS:-linux/amd64}"
+PUSH="${PUSH:-}"
 
 # Note that an image will *always* be built tagged with the GIT_TAG, so we know when it was built.
 # And, we add an extra version tag - either :latest or semver.

@@ -22,9 +22,20 @@ thisyear=`date +"%Y"`
 
 mkdir -p release/
 
+# Wrap sed to deal with GNU and BSD sed flags.
+run::sed() {
+  if sed --version </dev/null 2>&1 | grep -q GNU; then
+    # GNU sed
+    sed -i "$@"
+  else
+    # assume BSD sed
+    sed -i '' "$@"
+  fi
+}
+
 # Make clean files with boilerplate
 cat hack/boilerplate/boilerplate.sh.txt > release/experimental-install.yaml
-sed -i '' "s/YEAR/$thisyear/g" release/experimental-install.yaml
+run::sed "s/YEAR/$thisyear/g" release/experimental-install.yaml
 cat << EOF >> release/experimental-install.yaml
 #
 # Gateway API Experimental channel install
@@ -32,7 +43,7 @@ cat << EOF >> release/experimental-install.yaml
 EOF
 
 cat hack/boilerplate/boilerplate.sh.txt > release/standard-install.yaml
-sed -i '' "s/YEAR/$thisyear/g" release/standard-install.yaml
+run::sed "s/YEAR/$thisyear/g" release/standard-install.yaml
 cat << EOF >> release/standard-install.yaml
 #
 # Gateway API Standard channel install

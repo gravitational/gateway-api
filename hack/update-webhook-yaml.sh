@@ -22,6 +22,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Wrap sed to deal with GNU and BSD sed flags.
+run::sed() {
+  if sed --version </dev/null 2>&1 | grep -q GNU; then
+    # GNU sed
+    sed -i "$@"
+  else
+    # assume BSD sed
+    sed -i '' "$@"
+  fi
+}
+
 if [[ -z "${BASE_REF-}" ]];
 then
     echo "BASE_REF env var must be set and nonempty."
@@ -36,7 +47,7 @@ then
     for yaml in `ls config/webhook/*.yaml`
     do
         echo Replacing in $yaml
-        sed -i -E "s/admission-server:[a-z0-9\.-]+/admission-server:${BASE_REF}/g" $yaml
+        run::sed -E "s/admission-server:[a-z0-9\.-]+/admission-server:${BASE_REF}/g" $yaml
     done
 else
     echo "No version requested with BASE_REF, nothing to do."

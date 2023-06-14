@@ -18,20 +18,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source ./hack/teleport-helpers.sh
+
 thisyear=`date +"%Y"`
 
 mkdir -p release/
-
-# Wrap sed to deal with GNU and BSD sed flags.
-run::sed() {
-  if sed --version </dev/null 2>&1 | grep -q GNU; then
-    # GNU sed
-    sed -i "$@"
-  else
-    # assume BSD sed
-    sed -i '' "$@"
-  fi
-}
 
 # Make clean files with boilerplate
 cat hack/boilerplate/boilerplate.sh.txt > release/experimental-install.yaml

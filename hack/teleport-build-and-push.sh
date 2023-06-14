@@ -20,6 +20,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+pwd
+
 if [[ -z "${GIT_TAG-}" ]];
 then
     echo "GIT_TAG env var must be set and nonempty."
@@ -53,7 +55,7 @@ BINARY_TAG=$GIT_TAG
 # $BASE_REF has only two things that it can be set to by cloudbuild and Prow,
 # `main`, or a semver tag.
 # This is controlled by k8s.io/test-infra/config/jobs/image-pushing/k8s-staging-gateway-api.yaml.
-if [[ "${BASE_REF}" != "main" ]]
+if [[ "${BASE_REF}" != "teleport" ]]
 then
     # Since we know this is built from a tag or release branch, we can set the VERSION_TAG
     VERSION_TAG="${BASE_REF}"
@@ -63,19 +65,29 @@ then
 fi
 
 # Support multi-arch image build and push.
-BUILDX_PLATFORMS="linux/amd64,linux/arm64"
+BUILDX_PLATFORMS="${BUILDX_PLATFORMS:-linux/amd64}"
+PUSH="${PUSH:-}"
 
-echo "Building and pushing admission-server image...${BUILDX_PLATFORMS}"
-
-# First, build the image, with the version info passed in.
 # Note that an image will *always* be built tagged with the GIT_TAG, so we know when it was built.
 # And, we add an extra version tag - either :latest or semver.
 # The buildx integrate build and push in one line.
-docker buildx build \
-    -t ${REGISTRY}/admission-server:${GIT_TAG} \
-    -t ${REGISTRY}/admission-server:${VERSION_TAG} \
-    --build-arg "COMMIT=${COMMIT}" \
-    --build-arg "TAG=${BINARY_TAG}" \
-    --platform ${BUILDX_PLATFORMS} \
-    --push \
-    .
+echo "push is: $PUSH."
+if [ -z "$PUSH" ]; then
+    echo "Building admission-server image...${BUILDX_PLATFORMS}"
+    docker buildx build --load \
+        -t ${REGISTRY}/admission-server:${GIT_TAG} \
+        -t ${REGISTRY}/admission-server:${VERSION_TAG} \
+        --build-arg "COMMIT=${COMMIT}" \
+        --build-arg "TAG=${BINARY_TAG}" \
+        --platform ${BUILDX_PLATFORMS} \
+        .
+else
+    echo "Building and pushing admission-server image...${BUILDX_PLATFORMS}"
+    docker buildx build --push \
+        -t ${REGISTRY}/admission-server:${GIT_TAG} \
+        -t ${REGISTRY}/admission-server:${VERSION_TAG} \
+        --build-arg "COMMIT=${COMMIT}" \
+        --build-arg "TAG=${BINARY_TAG}" \
+        --platform ${BUILDX_PLATFORMS} \
+        .
+fi

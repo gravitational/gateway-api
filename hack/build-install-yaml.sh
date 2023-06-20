@@ -18,13 +18,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source ./hack/teleport-helpers.sh
+
 thisyear=`date +"%Y"`
 
 mkdir -p release/
 
 # Make clean files with boilerplate
 cat hack/boilerplate/boilerplate.sh.txt > release/experimental-install.yaml
-sed -i "s/YEAR/$thisyear/g" release/experimental-install.yaml
+run::sed "s/YEAR/$thisyear/g" release/experimental-install.yaml
 cat << EOF >> release/experimental-install.yaml
 #
 # Gateway API Experimental channel install
@@ -32,7 +34,7 @@ cat << EOF >> release/experimental-install.yaml
 EOF
 
 cat hack/boilerplate/boilerplate.sh.txt > release/standard-install.yaml
-sed -i "s/YEAR/$thisyear/g" release/standard-install.yaml
+run::sed "s/YEAR/$thisyear/g" release/standard-install.yaml
 cat << EOF >> release/standard-install.yaml
 #
 # Gateway API Standard channel install

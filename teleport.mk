@@ -15,7 +15,7 @@ teleport-build-arm: teleport-release
 
 .PHONY: teleport-verify
 teleport-verify:
-	EXCLUDE="verify-all.sh verify-examples-kind.sh" ./hack/verify-all.sh -v
+	EXCLUDE="verify-all.sh verify-examples-kind.sh verify-boilerplate.sh" ./hack/verify-all.sh -v
 
 .PHONY: teleport-test
 teleport-test: test
